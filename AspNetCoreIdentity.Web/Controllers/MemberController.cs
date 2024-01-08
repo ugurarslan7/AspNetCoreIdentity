@@ -143,7 +143,26 @@ namespace AspNetCoreIdentity.Web.Controllers
             string message = string.Empty;
             message = "Bu sayfa için yetkiniz yok !";
             @ViewBag.message = message;
-            return View( );
+            return View();
+        }
+
+        public IActionResult Claims()
+        {
+            var userClaim = User.Claims.Select(x => new ClaimViewModel
+            {
+                Issuer = x.Issuer,
+                Type = x.Type,
+                Value = x.Value,
+            }).ToList();
+
+            return View(userClaim);
+        }
+
+        [Authorize(Policy = "BursaPolicy")]
+        [HttpGet]
+        public IActionResult Bursa()
+        {
+            return View();
         }
     }
 }

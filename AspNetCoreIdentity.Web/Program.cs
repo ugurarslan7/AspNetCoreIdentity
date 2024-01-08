@@ -1,7 +1,9 @@
+using AspNetCoreIdentity.Web.ClaimsProvider;
 using AspNetCoreIdentity.Web.Extensions;
 using AspNetCoreIdentity.Web.Models;
 using AspNetCoreIdentity.Web.OptionsModels;
 using AspNetCoreIdentity.Web.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +28,15 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EMai
 builder.Services.AddIdentityWithExtension();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IClaimsTransformation, UserClaimProvider>();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("BursaPolicy", policy =>
+    {
+        policy.RequireClaim("city", "Bursa");
+    });
+});
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {

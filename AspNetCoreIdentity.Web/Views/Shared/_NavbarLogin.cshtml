@@ -1,0 +1,27 @@
+﻿@using System.Security.Claims;
+@if (User.Identity!.IsAuthenticated)
+{
+    <ul class="navbar-nav me-0">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                @User.Identity.Name
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" asp-controller="Member" asp-action="Index">Profil</a></li>
+                <li><a class="dropdown-item" asp-controller="Member" asp-action="PasswordChange">Şifre Değiştir</a></li>
+                <li><a class="dropdown-item" asp-controller="Member" asp-action="UserEdit">Profil Güncelle</a></li>
+                @if (User.HasClaim(x=>x.Type==ClaimTypes.Role && x.Value=="admin"))
+                {
+                    <li><a class="dropdown-item" asp-area="admin" asp-controller="Home" asp-action="Index">Admin Panel</a></li>
+                }
+                <li><a class="dropdown-item" asp-route-returnurl="/Home/Index" asp-controller="Member" asp-action="Logout">Çıkış Yap</a></li>
+            </ul>
+        </li>
+    </ul>
+}
+else
+{
+    <a asp-controller="Home" asp-action="SignUp" class="btn btn-outline-success mx-1" type="submit">Kayıt Ol</a>
+    <a asp-controller="Home" asp-action="SignIn" class="btn btn-outline-success" type="submit">Üye Girişi</a>
+}
+

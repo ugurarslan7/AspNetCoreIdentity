@@ -1,0 +1,98 @@
+﻿
+@{
+    ViewData["Title"] = "UserEdit";
+}
+@model UserEditViewModel
+
+<div class="row">
+    <div class="col-md-6 offset-3">
+        <h2>Kullanıcı Güncelleme Ekranı</h2>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success col-md-6 offset-3" role="alert">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger col-md-6 offset-3" role="alert">
+        </div>
+
+        <form asp-controller="Member" asp-action="UserEdit" method="post" enctype="multipart/form-data">
+            <div class="row mb-3">
+                <label for="Password" class="col-md-4 col-form-label" asp-for="UserName"></label>
+                <div class="col-md-8">
+                    <input asp-for="UserName" class="form-control">
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="Password" class="col-md-4 col-form-label" asp-for="Mail"></label>
+                <div class="col-md-8">
+                    <input asp-for="Mail" class="form-control">
+                    <span asp-validation-for="Mail" class="text-danger"></span>
+
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="PasswordConfirm" class="col-md-4 col-form-label" asp-for="Phone"></label>
+                <div class="col-md-8">
+                    <input asp-for="Phone" class="form-control">
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="PasswordConfirm" class="col-md-4 col-form-label" asp-for="Birthdate"></label>
+                <div class="col-md-8">
+                    <input asp-for="Birthdate" class="form-control">
+                    <span asp-validation-for="Birthdate" class="text-danger"></span>
+
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="PasswordConfirm" class="col-md-4 col-form-label" asp-for="City"></label>
+                <div class="col-md-8">
+                    <input asp-for="City" class="form-control">
+                    <span asp-validation-for="City" class="text-danger"></span>
+
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="PasswordConfirm" class="col-md-4 col-form-label" asp-for="Gender"></label>
+                <div class="col-md-8">
+                    <select class="form-control" asp-for="Gender" asp-items="ViewBag.genderList"> 
+                        <option>Cinsiyet Seçiniz</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
+
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="PasswordConfirm" class="col-md-4 col-form-label" asp-for="Photo"></label>
+                <div class="col-md-8">
+                    <input type="file" asp-for="Photo" class="form-control">
+                    <span asp-validation-for="Photo" class="text-danger"></span>
+
+                </div>
+            </div>
+
+
+            <div class="row mb-3">
+                <div class="col-md-8 offset-md-4">
+                    <button type="submit" class="btn btn-primary">Güncelle</button>
+                </div>
+            </div>
+
+
+        </form>
+    </div>
+</div>
+
+@* Servera gitmeden daha client gerekli validasyon kontroli yapılması *@
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

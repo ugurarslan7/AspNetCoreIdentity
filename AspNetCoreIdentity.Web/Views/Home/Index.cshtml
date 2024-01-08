@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Araç Kirala</h1>
+</div>
+ 
+    <style>
+        /* Basit bir CSS ile arama kutusu stilini belirleyebiliriz */
+        .search-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .search-box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+            max-width: 100%;
+        }
+
+        .search-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+            .search-button:hover {
+                background-color: #0056b3;
+            }
+    </style>
+ 
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-box" placeholder="Araç türü, marka, model...">
+        <button onclick="search()" class="search-button">Ara</button>
+    </div>
+
+    <script>
+        function search() {
+            var searchTerm = document.getElementById("searchInput").value;
+            // Burada arama işlemlerini yapabilirsiniz, örneğin:
+            // window.location.href = "ara.php?kelime=" + searchTerm; // Örnek bir arama URL'si
+            console.log("Aranan: " + searchTerm);
+        }
+    </script>
+ 

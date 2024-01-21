@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.FileProviders;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace AspNetCoreIdentity.Web.Controllers
 {
@@ -131,7 +133,13 @@ namespace AspNetCoreIdentity.Web.Controllers
 
             await _userManager.UpdateSecurityStampAsync(currentUser);
             await _signInManager.SignOutAsync();
-            await _signInManager.SignInAsync(currentUser, true);
+
+            if (currentUser.Birthdate != null)
+                await _signInManager.SignInWithClaimsAsync(currentUser, true, new[] {new Claim("birthday",
+                    currentUser.Birthdate.Value.ToString())});
+            else
+                await _signInManager.SignInAsync(currentUser, true);
+
 
             TempData["SuccessMessage"] = "Üye bilgileri başarıyla değiştirilmiştir.";
 
@@ -161,6 +169,20 @@ namespace AspNetCoreIdentity.Web.Controllers
         [Authorize(Policy = "BursaPolicy")]
         [HttpGet]
         public IActionResult Bursa()
+        {
+            return View();
+        }
+
+        [Authorize(Policy = "ExchangePolicy")]
+        [HttpGet]
+        public IActionResult ExchangePage()
+        {
+            return View();
+        }
+
+        [Authorize(Policy = "ViolencePolicy")]
+        [HttpGet]
+        public IActionResult ViolancePage()
         {
             return View();
         }

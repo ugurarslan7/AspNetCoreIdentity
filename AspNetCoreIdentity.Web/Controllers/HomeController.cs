@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Diagnostics;
 using AspNetCoreIdentity.Web.Extensions;
 using AspNetCoreIdentity.Web.Services;
+using System.Security.Claims;
 
 namespace AspNetCoreIdentity.Web.Controllers
 {
@@ -50,20 +51,33 @@ namespace AspNetCoreIdentity.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> SignUp(SignUpViewModel signUpViewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-
-                var identityResult = await _userManager.CreateAsync(new() { UserName = signUpViewModel.UserName, PhoneNumber = signUpViewModel.Phone, Email = signUpViewModel.Mail }, signUpViewModel.Password);
-                if (identityResult.Succeeded)
-                {
-                    TempData["SuccessMessage"] = "Üyelik işlemi başarıyla gerçekleşmiştir."; //TempData -> Cookie tek seferlik taşınır
-                    return RedirectToAction(nameof(SignUp));
-                }
-
-                ModelState.AddModelErrorList(identityResult.Errors.Select(x => x.Description).ToList());
-
+                return View();
             }
-            return View();
+
+            var identityResult = await _userManager.CreateAsync(new() { UserName = signUpViewModel.UserName, PhoneNumber = signUpViewModel.Phone, Email = signUpViewModel.Mail }, signUpViewModel.Password);
+            if (!identityResult.Succeeded)
+            {
+                ModelState.AddModelErrorList(identityResult.Errors.Select(x => x.Description).ToList());
+                return View();
+            }
+
+            var exchangeExpireClaim = new Claim("ExchangeExpiredDate", DateTime.Now.AddDays(10).ToString());
+
+            var currentUser = await _userManager.FindByNameAsync(signUpViewModel.UserName);
+
+            var claimResult = await _userManager.AddClaimAsync(currentUser!, exchangeExpireClaim);
+
+            if (!claimResult.Succeeded)
+            {
+                ModelState.AddModelErrorList(identityResult.Errors.Select(x => x.Description).ToList());
+                return View();
+            }
+
+            TempData["SuccessMessage"] = "Üyelik işlemi başarıyla gerçekleşmiştir."; //TempData -> Cookie tek seferlik taşınır
+
+            return RedirectToAction(nameof(SignUp));
         }
 
 
@@ -89,22 +103,27 @@ namespace AspNetCoreIdentity.Web.Controllers
                 return View();
             }
 
+            var signinResult = await _signInManager.PasswordSignInAsync(hasUser.UserName, signInViewModel.Password, signInViewModel.RememberMe, true);
 
-            var result = await _signInManager.PasswordSignInAsync(hasUser.UserName, signInViewModel.Password, signInViewModel.RememberMe, true);
-            if (result.Succeeded)
-            {
-                return Redirect(retunrurl);
-            }
-
-            if (result.IsLockedOut)
+            if (signinResult.IsLockedOut)
             {
                 ModelState.AddModelErrorList(new List<string>() { "10 dakika boyunca giriş yapamazsınız !" });
                 return View();
             }
 
-            ModelState.AddModelErrorList(new List<string>() { "Email veya şifre hatalı !",
-            $"Başarısız giriş sayısı={await _userManager.GetAccessFailedCountAsync(hasUser)}"});
-            return View();
+            if (!signinResult.Succeeded)
+            {
+                ModelState.AddModelErrorList(new List<string>() { "Email veya şifre hatalı !", $"Başarısız giriş sayısı={await _userManager.GetAccessFailedCountAsync(hasUser)}" });
+                return View();
+            }
+
+            if (hasUser.Birthdate.HasValue)
+            {
+                await _signInManager.SignInWithClaimsAsync(hasUser, signInViewModel.RememberMe, new[] {new Claim("Birthdate",
+                    hasUser.Birthdate.Value.ToString())});
+            }
+
+            return Redirect(retunrurl);
         }
 
         public IActionResult ForgetPassword()
@@ -139,7 +158,7 @@ namespace AspNetCoreIdentity.Web.Controllers
             TempData["userId"] = userId;
             TempData["token"] = token;
 
-        
+
 
             return View();
 
@@ -151,7 +170,7 @@ namespace AspNetCoreIdentity.Web.Controllers
             var userID = TempData["userId"];
             var token = TempData["token"];
 
-            if (token == null || userID ==null)
+            if (token == null || userID == null)
             {
                 throw new Exception("Bir hata meydana geldi.");
             }

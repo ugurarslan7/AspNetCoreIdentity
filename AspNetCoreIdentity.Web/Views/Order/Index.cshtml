@@ -1,0 +1,23 @@
+﻿@using Microsoft.AspNetCore.Authorization;
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Okuma Yetkisi Mevcut</h1>
+
+@inject IAuthorizationService authorizationService
+
+@* Silme Yetkisi varsa policiy tanımlanmıssa *@
+
+@if (authorizationService.AuthorizeAsync(User, "OrderPermissionDelete").Result.Succeeded)
+{
+    <button class="btn btn-primary">Order Delete</button>
+}
+
+
+@if (authorizationService.AuthorizeAsync(User, "StockPermissionDelete").Result.Succeeded)
+{
+    <button class="btn btn-primary">Stock Delete</button>
+}
+

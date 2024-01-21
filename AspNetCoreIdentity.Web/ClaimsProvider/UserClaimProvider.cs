@@ -13,7 +13,7 @@ namespace AspNetCoreIdentity.Web.ClaimsProvider
         {
             _userManager = userManager;
         }
-
+        //Her dafesında kullanıcı sayfaya erişmek istediğinde çağırılır
         public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
         {
             var identityUser = principal.Identity as ClaimsIdentity;

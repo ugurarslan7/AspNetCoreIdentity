@@ -2,13 +2,18 @@ using AspNetCoreIdentity.Web.ClaimsProvider;
 using AspNetCoreIdentity.Web.Extensions;
 using AspNetCoreIdentity.Web.Models;
 using AspNetCoreIdentity.Web.OptionsModels;
+using AspNetCoreIdentity.Web.PermissionsRoot;
+using AspNetCoreIdentity.Web.Requirements;
+using AspNetCoreIdentity.Web.Seeds;
 using AspNetCoreIdentity.Web.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using static AspNetCoreIdentity.Web.Requirements.ViolenceRequirement;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,12 +34,55 @@ builder.Services.AddIdentityWithExtension();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IClaimsTransformation, UserClaimProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, ExchangeExpireRequirementHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ViolenceRequirementHandler>();
+
 
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("BursaPolicy", policy =>
     {
         policy.RequireClaim("city", "Bursa");
+    });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ExchangePolicy", policy =>
+    {
+        policy.AddRequirements(new ExchangeExpireRequirement());
+    });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ViolencePolicy", policy =>
+    {
+        policy.AddRequirements(new ViolenceRequirement() { ThresholdAge = 18 });
+    });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OrderPermissionRead", policy =>
+    {
+        policy.RequireClaim("permission", Permission.Order.Read);
+    });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OrderPermissionDelete", policy =>
+    {
+        policy.RequireClaim("permission", Permission.Order.Delete);
+    });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("StockPermissionDelete", policy =>
+    {
+        policy.RequireClaim("permission", Permission.Order.Delete);
     });
 });
 
@@ -52,6 +100,13 @@ builder.Services.ConfigureApplicationCookie(opt =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<AppRole>>();
+
+    await PermissionSeed.Seed(roleManager);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

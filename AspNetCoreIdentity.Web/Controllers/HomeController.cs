@@ -1,11 +1,11 @@
-﻿using AspNetCoreIdentity.Web.Models;
+﻿using AspNetCoreIdentity.Web.BackgroundJobs;
+using AspNetCoreIdentity.Web.Extensions;
+using AspNetCoreIdentity.Web.Models;
+using AspNetCoreIdentity.Web.Services;
 using AspNetCoreIdentity.Web.ViewModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Diagnostics;
-using AspNetCoreIdentity.Web.Extensions;
-using AspNetCoreIdentity.Web.Services;
 using System.Security.Claims;
 
 namespace AspNetCoreIdentity.Web.Controllers
@@ -76,6 +76,8 @@ namespace AspNetCoreIdentity.Web.Controllers
             }
 
             TempData["SuccessMessage"] = "Üyelik işlemi başarıyla gerçekleşmiştir."; //TempData -> Cookie tek seferlik taşınır
+
+            FireAndForgetJobs.EmailsendToUserJob(signUpViewModel.Mail,"Aramıza hoşgeldiniz :)");
 
             return RedirectToAction(nameof(SignUp));
         }

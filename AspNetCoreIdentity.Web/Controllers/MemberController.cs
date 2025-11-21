@@ -1,4 +1,5 @@
-﻿using AspNetCoreIdentity.Web.Extensions;
+﻿using AspNetCoreIdentity.Web.BackgroundJobs;
+using AspNetCoreIdentity.Web.Extensions;
 using AspNetCoreIdentity.Web.Models;
 using AspNetCoreIdentity.Web.ViewModel;
 using Microsoft.AspNetCore.Authorization;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.FileProviders;
-using System.Collections.Generic;
 using System.Security.Claims;
 
 namespace AspNetCoreIdentity.Web.Controllers
@@ -105,7 +105,7 @@ namespace AspNetCoreIdentity.Web.Controllers
                 return View(model);
             }
 
-            var currentUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            var currentUser = await _userManager.FindByNameAsync(User.Identity!.Name!);
             currentUser.UserName = model.UserName;
             currentUser.Email = model.Mail;
             currentUser.PhoneNumber = model.Phone;
@@ -117,11 +117,12 @@ namespace AspNetCoreIdentity.Web.Controllers
             {
                 var wwwrootFolder = _fileProvider.GetDirectoryContents("wwwroot");
                 var randomPhotoName = $"{Guid.NewGuid().ToString()}{Path.GetExtension(model.Photo.FileName)}";
-                var newPhotoPath = Path.Combine(wwwrootFolder.First(x => x.Name == "UserPhoto").PhysicalPath, randomPhotoName);
+                var newPhotoPath = Path.Combine(wwwrootFolder.First(x => x.Name == "UserPhoto").PhysicalPath!, randomPhotoName);
 
                 using var stream = new FileStream(newPhotoPath, FileMode.Create);
                 await model.Photo.CopyToAsync(stream);
                 currentUser.Photo = randomPhotoName;
+
             }
 
             var updateUser = await _userManager.UpdateAsync(currentUser);
@@ -140,6 +141,7 @@ namespace AspNetCoreIdentity.Web.Controllers
             else
                 await _signInManager.SignInAsync(currentUser, true);
 
+            DelayedJobs.AddWatermarkJob(currentUser.Photo, currentUser.UserName);
 
             TempData["SuccessMessage"] = "Üye bilgileri başarıyla değiştirilmiştir.";
 

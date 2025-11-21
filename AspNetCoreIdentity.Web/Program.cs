@@ -1,21 +1,9 @@
-using AspNetCoreIdentity.Web.ClaimsProvider;
-using AspNetCoreIdentity.Web.Extensions;
-using AspNetCoreIdentity.Web.Models;
-using AspNetCoreIdentity.Web.OptionsModels;
-using AspNetCoreIdentity.Web.PermissionsRoot;
-using AspNetCoreIdentity.Web.Requirements;
-using AspNetCoreIdentity.Web.Seeds;
-using AspNetCoreIdentity.Web.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using static AspNetCoreIdentity.Web.Requirements.ViolenceRequirement;
+
+using AspNetCoreIdentity.Web.BackgroundJobs;
+using Hangfire.Common;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -36,6 +24,14 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IClaimsTransformation, UserClaimProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, ExchangeExpireRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ViolenceRequirementHandler>();
+
+//Hangfire start
+builder.Services.AddHangfire(config =>
+{
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("MSSQLConectionString"));
+});
+builder.Services.AddHangfireServer();
+//Hangfire end
 
 
 builder.Services.AddAuthorization(options =>
@@ -116,8 +112,20 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+
+    recurringJobManager.AddOrUpdate(
+        "SendReportJob",
+        Job.FromExpression(() => RecurringJobs.SendReport()),
+        Cron.MinuteInterval(2)
+    );
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.MapHangfireDashboard("/hangfire");
 
 app.UseRouting();
 app.UseAuthentication();

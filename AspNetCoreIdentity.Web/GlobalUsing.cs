@@ -1,0 +1,15 @@
+﻿global using AspNetCoreIdentity.Web.ClaimsProvider;
+global using AspNetCoreIdentity.Web.Extensions;
+global using AspNetCoreIdentity.Web.Models;
+global using AspNetCoreIdentity.Web.OptionsModels;
+global using AspNetCoreIdentity.Web.PermissionsRoot;
+global using AspNetCoreIdentity.Web.Requirements;
+global using AspNetCoreIdentity.Web.Seeds;
+global using AspNetCoreIdentity.Web.Services;
+global using Microsoft.AspNetCore.Authentication;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.FileProviders;
+global using static AspNetCoreIdentity.Web.Requirements.ViolenceRequirement;
+global using Hangfire;

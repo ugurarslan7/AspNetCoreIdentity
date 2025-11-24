@@ -1,8 +1,10 @@
 ﻿using AspNetCoreIdentity.Web.BackgroundJobs;
 using AspNetCoreIdentity.Web.Extensions;
+using AspNetCoreIdentity.Web.Filters;
 using AspNetCoreIdentity.Web.Models;
 using AspNetCoreIdentity.Web.Services;
 using AspNetCoreIdentity.Web.ViewModel;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -24,24 +26,46 @@ namespace AspNetCoreIdentity.Web.Controllers
             _emailService = emailService;
         }
 
+        [CustomHandleExceptionFilterAttribute(ErrorPage= "ErrorCustom1")]
         public IActionResult Index()
         {
+            int a = 45;
+            int b= 0;
+            int c = a / b;
             return View();
         }
 
+        [CustomHandleExceptionFilterAttribute(ErrorPage = "ErrorCustom2")]
         public IActionResult Privacy()
         {
+            int a = 45;
+            int b = 0;
+            int c = a / b;
             return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var exception = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+
+            ErrorViewModel errorModel = new();
+            errorModel.Path = exception.Path;
+            errorModel.Message = exception.Error.Message;
+
+            return View(errorModel);
         }
 
 
+        public IActionResult ErrorCustom1()
+        {
+            return View();
+        }
 
+        public IActionResult ErrorCustom2()
+        {
+            return View();
+        }
 
         public IActionResult SignUp()
         {
@@ -77,7 +101,7 @@ namespace AspNetCoreIdentity.Web.Controllers
 
             TempData["SuccessMessage"] = "Üyelik işlemi başarıyla gerçekleşmiştir."; //TempData -> Cookie tek seferlik taşınır
 
-            FireAndForgetJobs.EmailsendToUserJob(signUpViewModel.Mail,"Aramıza hoşgeldiniz :)");
+            FireAndForgetJobs.EmailsendToUserJob(signUpViewModel.Mail, "Aramıza hoşgeldiniz :)");
 
             return RedirectToAction(nameof(SignUp));
         }

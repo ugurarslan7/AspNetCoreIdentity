@@ -13,3 +13,5 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.FileProviders;
 global using static AspNetCoreIdentity.Web.Requirements.ViolenceRequirement;
 global using Hangfire;
+global using AspNetCoreIdentity.Web.BackgroundJobs;
+global using Hangfire.Common;

@@ -1,9 +1,4 @@
-
-using AspNetCoreIdentity.Web.BackgroundJobs;
-using Hangfire.Common;
-
 var builder = WebApplication.CreateBuilder(args);
-
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -107,10 +102,18 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseDeveloperExceptionPage();
+    app.UseStatusCodePages();
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
 }
+else
+{
+    app.UseHsts();
+
+}
+//app.UseExceptionHandler("/Home/Error"); 
+// uygulama bazýnda tek bir hata sayfam olsun diyorsan middware kullan ama controller -> method bazýnda inceleyeceðim diyorsan filter kullan
+//app.UseStatusCodePages("text/plain", "Bilinmeyen hata:{0}");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -122,7 +125,6 @@ using (var scope = app.Services.CreateScope())
         Cron.MinuteInterval(2)
     );
 }
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.MapHangfireDashboard("/hangfire");

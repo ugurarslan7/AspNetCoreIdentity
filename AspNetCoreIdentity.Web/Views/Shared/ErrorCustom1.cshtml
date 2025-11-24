@@ -1,0 +1,7 @@
+﻿@{
+    Exception exception = ViewData["Exception"] as Exception;
+    ViewData["Title"] = "Error";
+}
+<h1>Error</h1>
+<h2>Mesaj:@exception.Message</h2>
+<h3>Sayfa : @ViewData["url"]</h3>
